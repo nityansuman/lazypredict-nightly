@@ -30,10 +30,13 @@ requirements.txt is lighter, with boosting libraries now installable via extras.
 ## Install notes
 
 - Base install
-```
+
+```Bash
 pip install lazypredict-nightly
 ```
+
 - With boosting models
-```
+
+```Bash
 pip install "lazypredict-nightly[boosting]"
 ```
