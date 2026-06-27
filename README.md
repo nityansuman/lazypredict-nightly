@@ -259,10 +259,17 @@ Lazy Predict Nightly also provides wrappers for supervised time series workflows
 ### Evaluation helpers
 
 ```python
-    from lazypredict import evaluate_ts_classification, evaluate_ts_forecasting
+    from lazypredict import ClassificationMetrics, RegressionMetrics, TimeSeriesMetrics
 
-    classification_metrics = evaluate_ts_classification(y_true, y_pred)
-    forecasting_metrics = evaluate_ts_forecasting(y_true, y_pred)
+    classification_metrics = TimeSeriesMetrics.classification(y_true, y_pred)
+    forecasting_metrics = TimeSeriesMetrics.forecasting(y_true, y_pred)
+
+    # The underlying metric containers are also available directly.
+    accuracy = ClassificationMetrics.accuracy(y_true, y_pred)
+    balanced_accuracy = ClassificationMetrics.balanced_accuracy(y_true, y_pred)
+    f1_score_value = ClassificationMetrics.f1(y_true, y_pred)
+    r_squared = RegressionMetrics.r_squared(y_true, y_pred)
+    adjusted_r_squared = RegressionMetrics.adjusted_r_squared(y_true, y_pred, n_features=X_test.shape[1])
 ```
 
 ### Automatic Model Selection
