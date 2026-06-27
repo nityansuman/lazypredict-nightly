@@ -125,6 +125,28 @@ def get_card_split(df, cols, n=11):
     return card_low, card_high
 
 
+def get_roc_auc_score(estimator, X_test, y_test):
+    """Return ROC AUC from score outputs when available.
+
+    Hard labels collapse many classifiers to the same AUC-like value.
+    Using probability estimates or decision scores preserves ranking
+    differences between models and matches the intent of ROC AUC.
+    """
+    if hasattr(estimator, "predict_proba"):
+        y_score = estimator.predict_proba(X_test)
+        if y_score.ndim == 2 and y_score.shape[1] > 2:
+            return roc_auc_score(y_test, y_score, multi_class="ovr")
+        return roc_auc_score(y_test, y_score[:, 1])
+
+    if hasattr(estimator, "decision_function"):
+        y_score = estimator.decision_function(X_test)
+        if np.ndim(y_score) == 2 and y_score.shape[1] > 2:
+            return roc_auc_score(y_test, y_score, multi_class="ovr")
+        return roc_auc_score(y_test, y_score)
+
+    return roc_auc_score(y_test, estimator.predict(X_test))
+
+
 # Helper class for performing classification
 
 
@@ -297,7 +319,7 @@ class LazyClassifier:
                 b_accuracy = balanced_accuracy_score(y_test, y_pred)
                 f1 = f1_score(y_test, y_pred, average="weighted")
                 try:
-                    roc_auc = roc_auc_score(y_test, y_pred)
+                    roc_auc = get_roc_auc_score(pipe, X_test, y_test)
                 except Exception as exception:
                     roc_auc = None
                     if self.ignore_warnings is False:

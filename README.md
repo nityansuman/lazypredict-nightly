@@ -84,12 +84,12 @@ To use Lazy Predict in a project:
 ```
     from lazypredict import LazyRegressor
 
-    from sklearn import datasets
+    from sklearn.datasets import fetch_california_housing
     from sklearn.utils import shuffle
     import numpy as np
 
-    boston = datasets.load_boston()
-    X, y = shuffle(boston.data, boston.target, random_state=13)
+    housing = fetch_california_housing()
+    X, y = shuffle(housing.data, housing.target, random_state=13)
     X = X.astype(np.float32)
 
     offset = int(X.shape[0] * 0.9)
@@ -101,6 +101,8 @@ To use Lazy Predict in a project:
     models, predictions = reg.fit(X_train, X_test, y_train, y_test)
 
     print(models)
+
+    # LightGBM may print informational warnings while fitting; this is expected.
 
 
     | Model                         | Adjusted R-Squared | R-Squared |  RMSE | Time Taken |
