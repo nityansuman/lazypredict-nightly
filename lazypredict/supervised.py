@@ -147,6 +147,14 @@ def get_roc_auc_score(estimator, X_test, y_test):
     return roc_auc_score(y_test, estimator.predict(X_test))
 
 
+def filter_models(models, exclude_models=None):
+    if not exclude_models:
+        return list(models)
+
+    excluded = {model_name for model_name in exclude_models}
+    return [model for model in models if model[0] not in excluded]
+
+
 # Helper class for performing classification
 
 
@@ -222,6 +230,8 @@ class LazyClassifier:
         predictions=False,
         random_state=42,
         classifiers="all",
+        exclude_models=None,
+        time_limit=None,
     ):
         self.verbose = verbose
         self.ignore_warnings = ignore_warnings
@@ -230,6 +240,8 @@ class LazyClassifier:
         self.models = {}
         self.random_state = random_state
         self.classifiers = classifiers
+        self.exclude_models = exclude_models or []
+        self.time_limit = time_limit
 
     def fit(self, X_train, X_test, y_train, y_test):
         """Fit Classification algorithms to X_train and y_train, predict and score on X_test, y_test.
@@ -285,19 +297,26 @@ class LazyClassifier:
         )
 
         if self.classifiers == "all":
-            self.classifiers = CLASSIFIERS
+            self.classifiers = filter_models(CLASSIFIERS, self.exclude_models)
         else:
             try:
                 temp_list = []
                 for classifier in self.classifiers:
                     full_name = (classifier.__name__, classifier)
                     temp_list.append(full_name)
-                self.classifiers = temp_list
+                self.classifiers = filter_models(temp_list, self.exclude_models)
             except Exception as exception:
                 print(exception)
                 print("Invalid Classifier(s)")
 
+        benchmark_start = time.time()
+
         for name, model in tqdm(self.classifiers):
+            if self.time_limit is not None and (time.time() - benchmark_start) >= self.time_limit:
+                if self.ignore_warnings is False:
+                    print(f"Stopped early after reaching the {self.time_limit} second time limit")
+                break
+
             start = time.time()
             try:
                 if "random_state" in model().get_params().keys():
@@ -522,6 +541,8 @@ class LazyRegressor:
         predictions=False,
         random_state=42,
         regressors="all",
+        exclude_models=None,
+        time_limit=None,
     ):
         self.verbose = verbose
         self.ignore_warnings = ignore_warnings
@@ -530,6 +551,8 @@ class LazyRegressor:
         self.models = {}
         self.random_state = random_state
         self.regressors = regressors
+        self.exclude_models = exclude_models or []
+        self.time_limit = time_limit
 
     def fit(self, X_train, X_test, y_train, y_test):
         """Fit Regression algorithms to X_train and y_train, predict and score on X_test, y_test.
@@ -585,19 +608,26 @@ class LazyRegressor:
         )
 
         if self.regressors == "all":
-            self.regressors = REGRESSORS
+            self.regressors = filter_models(REGRESSORS, self.exclude_models)
         else:
             try:
                 temp_list = []
                 for regressor in self.regressors:
                     full_name = (regressor.__name__, regressor)
                     temp_list.append(full_name)
-                self.regressors = temp_list
+                self.regressors = filter_models(temp_list, self.exclude_models)
             except Exception as exception:
                 print(exception)
                 print("Invalid Regressor(s)")
 
+        benchmark_start = time.time()
+
         for name, model in tqdm(self.regressors):
+            if self.time_limit is not None and (time.time() - benchmark_start) >= self.time_limit:
+                if self.ignore_warnings is False:
+                    print(f"Stopped early after reaching the {self.time_limit} second time limit")
+                break
+
             start = time.time()
             try:
                 if "random_state" in model().get_params().keys():
