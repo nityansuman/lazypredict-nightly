@@ -50,6 +50,6 @@ setup(
     setup_requires=setup_requirements,
     test_suite="tests",
     url="https://github.com/nityansuman/lazypredict-nightly",
-    version="0.3.2",
+    version="0.4.0",
     zip_safe=False
 )
