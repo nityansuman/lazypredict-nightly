@@ -13,6 +13,24 @@ from .supervised import LazyClassifier, LazyRegressor
 
 
 def make_supervised_windows(series, lookback=5, horizon=1):
+    """Convert a raw series into supervised learning windows.
+
+    Parameters
+    ----------
+    series : array-like
+        Univariate or multivariate time series.
+    lookback : int, optional
+        Number of past steps to use as features.
+    horizon : int, optional
+        Number of future steps to predict.
+
+    Returns
+    -------
+    X : numpy.ndarray
+        Windowed feature matrix.
+    y : numpy.ndarray
+        Windowed target array.
+    """
     values = np.asarray(series)
     if values.ndim == 1:
         values = values.reshape(-1, 1)
@@ -40,6 +58,26 @@ def make_supervised_windows(series, lookback=5, horizon=1):
 
 
 def make_classification_windows(series, labels, lookback=5, horizon=1):
+    """Create aligned feature and label windows for time-series classification.
+
+    Parameters
+    ----------
+    series : array-like
+        Time-series input used to build feature windows.
+    labels : array-like
+        Classification targets aligned to the series.
+    lookback : int, optional
+        Number of past steps to use as features.
+    horizon : int, optional
+        Number of future steps per target window.
+
+    Returns
+    -------
+    features : numpy.ndarray
+        Windowed feature matrix.
+    y : numpy.ndarray
+        Windowed classification targets.
+    """
     features, _ = make_supervised_windows(series, lookback=lookback, horizon=horizon)
 
     label_values = np.asarray(labels)
@@ -59,6 +97,10 @@ def make_classification_windows(series, labels, lookback=5, horizon=1):
 
 
 def evaluate_ts_classification(y_true, y_pred):
+    """Compute standard classification metrics for time-series predictions.
+
+    Returns accuracy, balanced accuracy, and weighted F1 score.
+    """
     return {
         "Accuracy": accuracy_score(y_true, y_pred),
         "Balanced Accuracy": balanced_accuracy_score(y_true, y_pred),
@@ -67,6 +109,10 @@ def evaluate_ts_classification(y_true, y_pred):
 
 
 def evaluate_ts_forecasting(y_true, y_pred):
+    """Compute standard forecasting metrics for time-series predictions.
+
+    Returns MAE, RMSE, and R2. For multi-step outputs, MSE is also included.
+    """
     y_true = np.asarray(y_true)
     y_pred = np.asarray(y_pred)
 
@@ -83,6 +129,8 @@ def evaluate_ts_forecasting(y_true, y_pred):
 
 
 class LazyTimeSeriesClassifier:
+    """Benchmark classification models on supervised time-series windows."""
+
     def __init__(
         self,
         lookback=5,
@@ -91,6 +139,21 @@ class LazyTimeSeriesClassifier:
         random_state=42,
         **classifier_kwargs,
     ):
+        """Store the windowing configuration and classifier options.
+
+        Parameters
+        ----------
+        lookback : int, optional
+            Number of historical steps used per sample.
+        horizon : int, optional
+            Number of future steps per target window.
+        test_size : float, optional
+            Fraction of samples reserved for evaluation.
+        random_state : int, optional
+            Random seed used by the internal train/test split.
+        **classifier_kwargs : dict
+            Additional keyword arguments forwarded to LazyClassifier.
+        """
         self.lookback = lookback
         self.horizon = horizon
         self.test_size = test_size
@@ -99,6 +162,22 @@ class LazyTimeSeriesClassifier:
         self.models = {}
 
     def fit(self, series, labels):
+        """Fit all supported classifiers on windowed time-series data.
+
+        Parameters
+        ----------
+        series : array-like
+            Time-series values used to create feature windows.
+        labels : array-like
+            Classification targets aligned to the input series.
+
+        Returns
+        -------
+        scores : pandas.DataFrame
+            Model comparison table returned by LazyClassifier.
+        predictions : pandas.DataFrame
+            Optional predictions table returned by LazyClassifier.
+        """
         X, y = make_classification_windows(
             series,
             labels,
@@ -121,6 +200,8 @@ class LazyTimeSeriesClassifier:
 
 
 class LazyTimeSeriesRegressor:
+    """Benchmark regression models on supervised time-series windows."""
+
     def __init__(
         self,
         lookback=5,
@@ -129,6 +210,21 @@ class LazyTimeSeriesRegressor:
         random_state=42,
         **regressor_kwargs,
     ):
+        """Store the windowing configuration and regressor options.
+
+        Parameters
+        ----------
+        lookback : int, optional
+            Number of historical steps used per sample.
+        horizon : int, optional
+            Number of future steps per target window.
+        test_size : float, optional
+            Fraction of samples reserved for evaluation.
+        random_state : int, optional
+            Random seed used by the internal train/test split.
+        **regressor_kwargs : dict
+            Additional keyword arguments forwarded to LazyRegressor.
+        """
         self.lookback = lookback
         self.horizon = horizon
         self.test_size = test_size
@@ -137,6 +233,20 @@ class LazyTimeSeriesRegressor:
         self.models = {}
 
     def fit(self, series):
+        """Fit all supported regressors on windowed time-series data.
+
+        Parameters
+        ----------
+        series : array-like
+            Time-series values used to create feature and target windows.
+
+        Returns
+        -------
+        scores : pandas.DataFrame
+            Model comparison table returned by LazyRegressor.
+        predictions : pandas.DataFrame
+            Optional predictions table returned by LazyRegressor.
+        """
         X, y = make_supervised_windows(series, lookback=self.lookback, horizon=self.horizon)
 
         X_train, X_test, y_train, y_test = train_test_split(
@@ -150,8 +260,8 @@ class LazyTimeSeriesRegressor:
 
 
 class LazyTimeSeriesForecasting(LazyTimeSeriesRegressor):
-    pass
+    """Alias for LazyTimeSeriesRegressor for forecasting use cases."""
 
 
 class LazyTimeSeriesClassification(LazyTimeSeriesClassifier):
-    pass
+    """Alias for LazyTimeSeriesClassifier for classification use cases."""

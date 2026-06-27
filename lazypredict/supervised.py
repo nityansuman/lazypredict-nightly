@@ -103,21 +103,23 @@ categorical_transformer_high = Pipeline(
 # Helper function
 def get_card_split(df, cols, n=11):
     """
-    Splits categorical columns into 2 lists based on cardinality (i.e # of unique values)
+    Split categorical columns into low- and high-cardinality groups.
+
     Parameters
     ----------
     df : Pandas DataFrame
-        DataFrame from which the cardinality of the columns is calculated.
+        DataFrame used to calculate column cardinality.
     cols : list-like
-        Categorical columns to list
+        Column names to evaluate.
     n : int, optional (default=11)
-        The value of 'n' will be used to split columns.
+        Cardinality threshold used to separate the columns.
+
     Returns
     -------
     card_low : list-like
-        Columns with cardinality < n
+        Columns with cardinality lower than ``n``.
     card_high : list-like
-        Columns with cardinality >= n
+        Columns with cardinality greater than or equal to ``n``.
     """
     cond = df[cols].nunique() > n
     card_high = cols[cond]
@@ -126,11 +128,25 @@ def get_card_split(df, cols, n=11):
 
 
 def get_roc_auc_score(estimator, X_test, y_test):
-    """Return ROC AUC from score outputs when available.
+    """Compute ROC AUC from probabilistic or margin-based outputs.
 
     Hard labels collapse many classifiers to the same AUC-like value.
     Using probability estimates or decision scores preserves ranking
     differences between models and matches the intent of ROC AUC.
+
+    Parameters
+    ----------
+    estimator : sklearn estimator
+        Fitted classifier pipeline or estimator.
+    X_test : array-like
+        Test features used to generate scores.
+    y_test : array-like
+        Ground-truth labels for AUC evaluation.
+
+    Returns
+    -------
+    float
+        ROC AUC score.
     """
     if hasattr(estimator, "predict_proba"):
         y_score = estimator.predict_proba(X_test)
@@ -148,6 +164,20 @@ def get_roc_auc_score(estimator, X_test, y_test):
 
 
 def filter_models(models, exclude_models=None):
+    """Remove excluded model names from a list of estimator tuples.
+
+    Parameters
+    ----------
+    models : iterable
+        Sequence of ``(name, estimator)`` tuples.
+    exclude_models : list-like, optional
+        Estimator names to filter out.
+
+    Returns
+    -------
+    list
+        Filtered estimator tuples.
+    """
     if not exclude_models:
         return list(models)
 
@@ -160,20 +190,24 @@ def filter_models(models, exclude_models=None):
 
 class LazyClassifier:
     """
-    This module helps in fitting to all the classification algorithms that are available in Scikit-learn
+    Benchmark scikit-learn classification algorithms on tabular data.
+
     Parameters
     ----------
     verbose : int, optional (default=0)
-        For the liblinear and lbfgs solvers set verbose to any positive
-        number for verbosity.
+        Print model-level metrics when greater than zero.
     ignore_warnings : bool, optional (default=True)
-        When set to True, the warning related to algorigms that are not able to run are ignored.
+        Suppress estimator failures when set to True.
     custom_metric : function, optional (default=None)
-        When function is provided, models are evaluated based on the custom evaluation metric provided.
+        Optional callable used to compute an extra metric.
     prediction : bool, optional (default=False)
-        When set to True, the predictions of all the models models are returned as dataframe.
+        Return per-model predictions when True.
     classifiers : list, optional (default="all")
-        When function is provided, trains the chosen classifier(s).
+        Sequence of estimator classes to benchmark, or ``"all"``.
+    exclude_models : list, optional
+        Estimator names to skip when benchmarking.
+    time_limit : int or float, optional
+        Stop benchmarking after the specified number of seconds.
 
     Examples
     --------
@@ -245,6 +279,7 @@ class LazyClassifier:
 
     def fit(self, X_train, X_test, y_train, y_test):
         """Fit Classification algorithms to X_train and y_train, predict and score on X_test, y_test.
+
         Parameters
         ----------
         X_train : array-like,
@@ -259,6 +294,7 @@ class LazyClassifier:
         y_test : array-like,
             Testing vectors, where rows is the number of samples
             and columns is the number of features.
+
         Returns
         -------
         scores : Pandas DataFrame
@@ -417,7 +453,9 @@ class LazyClassifier:
     def provide_models(self, X_train, X_test, y_train, y_test):
         """
         This function returns all the model objects trained in fit function.
+
         If fit is not called already, then we call fit and then return the models.
+
         Parameters
         ----------
         X_train : array-like,
@@ -453,20 +491,24 @@ def adjusted_rsquared(r2, n, p):
 
 class LazyRegressor:
     """
-    This module helps in fitting regression models that are available in Scikit-learn
+    Benchmark scikit-learn regression algorithms on tabular data.
+
     Parameters
     ----------
     verbose : int, optional (default=0)
-        For the liblinear and lbfgs solvers set verbose to any positive
-        number for verbosity.
+        Print model-level metrics when greater than zero.
     ignore_warnings : bool, optional (default=True)
-        When set to True, the warning related to algorigms that are not able to run are ignored.
+        Suppress estimator failures when set to True.
     custom_metric : function, optional (default=None)
-        When function is provided, models are evaluated based on the custom evaluation metric provided.
+        Optional callable used to compute an extra metric.
     prediction : bool, optional (default=False)
-        When set to True, the predictions of all the models models are returned as dataframe.
+        Return per-model predictions when True.
     regressors : list, optional (default="all")
-        When function is provided, trains the chosen regressor(s).
+        Sequence of estimator classes to benchmark, or ``"all"``.
+    exclude_models : list, optional
+        Estimator names to skip when benchmarking.
+    time_limit : int or float, optional
+        Stop benchmarking after the specified number of seconds.
 
     Examples
     --------
@@ -556,6 +598,7 @@ class LazyRegressor:
 
     def fit(self, X_train, X_test, y_train, y_test):
         """Fit Regression algorithms to X_train and y_train, predict and score on X_test, y_test.
+
         Parameters
         ----------
         X_train : array-like,
@@ -570,6 +613,7 @@ class LazyRegressor:
         y_test : array-like,
             Testing vectors, where rows is the number of samples
             and columns is the number of features.
+
         Returns
         -------
         scores : Pandas DataFrame
@@ -705,7 +749,9 @@ class LazyRegressor:
     def provide_models(self, X_train, X_test, y_train, y_test):
         """
         This function returns all the model objects trained in fit function.
+
         If fit is not called already, then we call fit and then return the models.
+
         Parameters
         ----------
         X_train : array-like,
