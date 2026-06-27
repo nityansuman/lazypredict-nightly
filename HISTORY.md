@@ -1,78 +1,42 @@
 ---
-History
+Lastest Release
 ---
 
-# 0.3.2 (2024-03-25)
+# 0.5.0 (2026-06-27)
 
--   Major import bug fix
--   Cleanup
+- Refactored the package into dedicated classifier, regressor, auto-selection, and time-series modules.
+- Added class-based metric containers for classification, regression, and time-series evaluation.
+- Added leakage-aware time-series holdout splitting and walk-forward backtesting.
+- Added automatic model selection wrappers for classification, regression, and time-series workflows.
+- Improved ROC AUC handling to use probabilistic or margin-based outputs.
+- Made xgboost and lightgbm optional extras instead of hard requirements.
+- Expanded test coverage for imbalanced multiclass classification, multi-output regression, and time-series edge cases.
+- Updated the README with the new API, backtest examples, and shorter example outputs.
 
-# 0.3.1 (2024-03-03)
+## Notable changes
 
--   Minor cleanups
+- supervised.py was reduced to a compatibility layer, while the real implementations now live in separate modules.
+- __init__.py now exposes a cleaner public API.
+requirements.txt is lighter, with boosting libraries now installable via extras.
+- Time-series benchmarking is now more leakage-aware and supports backtesting.
+- Tests and smoke coverage were expanded significantly.
 
-# 0.3.0 (2024-03-03)
+## Potential breaking changes
 
--   Fixed OneHotEncoder Bug
+- Some old helper-style metric imports were removed in favor of class-based access.
+- Time-series usage is now documented and structured around the new backtest() API.
+- If you relied on xgboost or lightgbm being installed automatically, you now need the boosting extra.
 
-# 0.2.11 (2022-02-06)
+## Install notes
 
--   Updated the default version to 3.9
+- Base install
 
-# 0.2.10 (2022-02-06)
+```Bash
+pip install lazypredict-nightly
+```
 
--   Fixed issue with older version of Scikit-learn
--   Reduced dependencies sctrictly to few
+- With boosting models
 
-# 0.2.8 (2021-02-06)
-
--   Removed StackingRegressor and CheckingClassifier.
--   Added provided_models method.
--   Added adjusted r-squared metric.
--   Added cardinality check to split categorical columns into low and
-    high cardinality features.
--   Added different transformation pipeline for low and high cardinality
-    features.
--   Included all number dtypes as inputs.
--   Fixed dependencies.
--   Improved documentation.
-
-# 0.2.7 (2020-07-09)
-
--   Removed catboost regressor and classifier
-
-# 0.2.6 (2020-01-22)
-
--   Added xgboost, lightgbm, catboost regressors and classifiers
-
-# 0.2.5 (2020-01-20)
-
--   Removed troublesome regressors from list of CLASSIFIERS
-
-# 0.2.4 (2020-01-19)
-
--   Removed troublesome regressors from list of REGRESSORS
--   Added feature to input custom metric for evaluation
--   Added feature to return predictions as dataframe
--   Added model training time for each model
-
-# 0.2.3 (2019-11-22)
-
--   Removed TheilSenRegressor from list of REGRESSORS
--   Removed GaussianProcessClassifier from list of CLASSIFIERS
-
-# 0.2.2 (2019-11-18)
-
--   Fixed automatic deployment issue.
-
-# 0.2.1 (2019-11-18)
-
--   Release of Regression feature.
-
-# 0.2.0 (2019-11-17)
-
--   Release of Classification feature.
-
-# 0.1.0 (2019-11-16)
-
--   First release on PyPI.
+```Bash
+pip install "lazypredict-nightly[boosting]"
+```
