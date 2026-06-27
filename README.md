@@ -5,16 +5,6 @@ Lazy Predict 2.0 to help you benchmark models without much code and understand w
 [![image](https://img.shields.io/pypi/v/lazypredict-nightly.svg)](https://pypi.python.org/pypi/lazypredict-nightly)
 [![Downloads](https://pepy.tech/badge/lazypredict-nightly)](https://pepy.tech/project/lazypredict-nightly)
 
-## Coming soon
-
-- [ ] LLM Benchmarking - Foundational
-- [ ] LLM Benchmarking - Task Specific
-  - [ ] Text Classification
-  - [ ] Token Classification
-  - [ ] Text Summarization
-  - [ ] Text Similarity
-- [ ] Statistical Model Benchmarking
-
 ## Getting started
 
 To install Lazy Predict Nightly:
@@ -198,4 +188,28 @@ Lazy Predict Nightly also provides wrappers for supervised time series workflows
 
     classification_metrics = evaluate_ts_classification(y_true, y_pred)
     forecasting_metrics = evaluate_ts_forecasting(y_true, y_pred)
+```
+
+## Automatic Model Selection
+
+If you want Lazy Predict Nightly to return the best model directly, use the auto wrappers.
+
+```
+    from lazypredict import AutoLazyClassifier, AutoLazyRegressor
+
+    auto_clf = AutoLazyClassifier(metric="Balanced Accuracy")
+    best_name, best_model, scores = auto_clf.fit(X_train, X_test, y_train, y_test)
+
+    auto_reg = AutoLazyRegressor(metric="Adjusted R-Squared")
+    best_name, best_model, scores = auto_reg.fit(X_train, X_test, y_train, y_test)
+```
+
+```
+    from lazypredict import AutoLazyTimeSeriesClassifier, AutoLazyTimeSeriesForecasting
+
+    auto_ts_clf = AutoLazyTimeSeriesClassifier(metric="Balanced Accuracy")
+    best_name, best_model, scores = auto_ts_clf.fit(series, labels)
+
+    auto_ts_reg = AutoLazyTimeSeriesForecasting(metric="Adjusted R-Squared")
+    best_name, best_model, scores = auto_ts_reg.fit(series)
 ```
