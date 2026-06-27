@@ -14,7 +14,7 @@ from .utils.classification_metrics import ClassificationMetrics
 from .utils.regression_metrics import RegressionMetrics
 from .utils.time_series_metrics import TimeSeriesMetrics
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 __all__ = [
 	"LazyClassifier",
