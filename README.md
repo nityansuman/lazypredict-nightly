@@ -23,7 +23,7 @@ The examples below use multiple datasets from `sklearn` so you can see how the p
 
 Binary and multiclass examples using breast cancer and iris.
 
-```
+```python
     from lazypredict import LazyClassifier
 
     from sklearn.datasets import load_breast_cancer, load_iris
@@ -94,7 +94,7 @@ Binary and multiclass examples using breast cancer and iris.
 
 Single-output and multi-output examples using California housing and diabetes.
 
-```
+```python
     from lazypredict import LazyRegressor
 
     from sklearn.datasets import fetch_california_housing, load_diabetes
@@ -188,7 +188,7 @@ Lazy Predict Nightly also provides wrappers for supervised time series workflows
 
 ### 1-step forecasting
 
-```
+```python
     from lazypredict import LazyTimeSeriesForecasting
     from sklearn.datasets import load_diabetes
 
@@ -205,7 +205,7 @@ Lazy Predict Nightly also provides wrappers for supervised time series workflows
 
 ### Multi-step forecasting
 
-```
+```python
     from lazypredict import LazyTimeSeriesForecasting
     from sklearn.datasets import fetch_california_housing
 
@@ -222,7 +222,7 @@ Lazy Predict Nightly also provides wrappers for supervised time series workflows
 
 ### 1-step classification
 
-```
+```python
     from lazypredict import LazyTimeSeriesClassification
     from sklearn.datasets import load_breast_cancer
 
@@ -240,7 +240,7 @@ Lazy Predict Nightly also provides wrappers for supervised time series workflows
 
 ### Multi-step classification
 
-```
+```python
     from lazypredict import LazyTimeSeriesClassification
     from sklearn.datasets import load_iris
 
@@ -258,7 +258,7 @@ Lazy Predict Nightly also provides wrappers for supervised time series workflows
 
 ### Evaluation helpers
 
-```
+```python
     from lazypredict import evaluate_ts_classification, evaluate_ts_forecasting
 
     classification_metrics = evaluate_ts_classification(y_true, y_pred)
@@ -269,7 +269,7 @@ Lazy Predict Nightly also provides wrappers for supervised time series workflows
 
 If you want Lazy Predict Nightly to return the best model directly, use the auto wrappers.
 
-```
+```python
     from lazypredict import AutoLazyClassifier, AutoLazyRegressor
     from sklearn.datasets import load_iris, load_diabetes
 
@@ -292,7 +292,7 @@ If you want Lazy Predict Nightly to return the best model directly, use the auto
     print(best_name)
 ```
 
-```
+```python
     from lazypredict import AutoLazyTimeSeriesClassifier, AutoLazyTimeSeriesForecasting
     from sklearn.datasets import load_breast_cancer, fetch_california_housing
 
