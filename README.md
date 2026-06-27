@@ -150,3 +150,52 @@ To use Lazy Predict in a project:
     | LassoLars                     |              -0.38 |     -0.02 |  7.56 |       0.01 |
     | KernelRidge                   |             -11.50 |     -8.25 | 22.74 |       0.01 |
 ```
+
+## Time Series
+
+Lazy Predict Nightly also provides wrappers for supervised time series workflows.
+
+### 1-step forecasting
+
+```
+    from lazypredict import LazyTimeSeriesForecasting
+
+    model = LazyTimeSeriesForecasting(lookback=10, horizon=1, test_size=0.2)
+    scores, predictions = model.fit(series)
+```
+
+### Multi-step forecasting
+
+```
+    from lazypredict import LazyTimeSeriesForecasting
+
+    model = LazyTimeSeriesForecasting(lookback=10, horizon=3, test_size=0.2)
+    scores, predictions = model.fit(series)
+```
+
+### 1-step classification
+
+```
+    from lazypredict import LazyTimeSeriesClassification
+
+    model = LazyTimeSeriesClassification(lookback=10, horizon=1, test_size=0.2)
+    scores, predictions = model.fit(series, labels)
+```
+
+### Multi-step classification
+
+```
+    from lazypredict import LazyTimeSeriesClassification
+
+    model = LazyTimeSeriesClassification(lookback=10, horizon=3, test_size=0.2)
+    scores, predictions = model.fit(series, labels)
+```
+
+### Evaluation helpers
+
+```
+    from lazypredict import evaluate_ts_classification, evaluate_ts_forecasting
+
+    classification_metrics = evaluate_ts_classification(y_true, y_pred)
+    forecasting_metrics = evaluate_ts_forecasting(y_true, y_pred)
+```
