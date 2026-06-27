@@ -29,6 +29,20 @@ def test_time_series_forecasting_smoke():
     assert predictions is None or not predictions.empty
 
 
+def test_time_series_forecasting_backtest_smoke():
+    series = np.arange(80).reshape(-1, 1)
+    model = LazyTimeSeriesForecasting(
+        lookback=5,
+        horizon=2,
+        test_size=0.2,
+        n_splits=3,
+        regressors=[DecisionTreeRegressor],
+    )
+    backtest_scores = model.backtest(series)
+
+    assert not backtest_scores.empty
+
+
 def test_time_series_classification_smoke():
     series = np.column_stack([np.arange(80), np.arange(80) * 2])
     labels = np.array([0, 1] * 40)
@@ -43,6 +57,21 @@ def test_time_series_classification_smoke():
 
     assert not scores.empty
     assert predictions is None or not predictions.empty
+
+
+def test_time_series_classification_backtest_smoke():
+    series = np.column_stack([np.arange(80), np.arange(80) * 2])
+    labels = np.array([0, 1] * 40)
+    model = LazyTimeSeriesClassification(
+        lookback=5,
+        horizon=1,
+        test_size=0.2,
+        n_splits=3,
+        classifiers=[DecisionTreeClassifier],
+    )
+    backtest_scores = model.backtest(series, labels)
+
+    assert not backtest_scores.empty
 
 
 def test_time_series_metrics_helpers():

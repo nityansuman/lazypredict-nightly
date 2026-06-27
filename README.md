@@ -221,6 +221,21 @@ Lazy Predict Nightly also provides wrappers for supervised time series workflows
     print(scores.head())
 ```
 
+```python
+    from lazypredict import LazyTimeSeriesForecasting
+    from sklearn.datasets import load_diabetes
+
+    # Walk-forward backtesting with expanding chronological splits
+    data = load_diabetes()
+    series = data.data
+
+    model = LazyTimeSeriesForecasting(lookback=10, horizon=1, test_size=0.2, n_splits=3)
+    scores = model.backtest(series)
+
+    # Expected output: a model ranking averaged across walk-forward splits.
+    print(scores.head())
+```
+
 ### Multi-step forecasting
 
 ```python
@@ -253,6 +268,22 @@ Lazy Predict Nightly also provides wrappers for supervised time series workflows
     scores, predictions = model.fit(series, labels)
 
     # Expected output: a classification benchmark table ranked by Balanced Accuracy.
+    print(scores.head())
+```
+
+```python
+    from lazypredict import LazyTimeSeriesClassification
+    from sklearn.datasets import load_breast_cancer
+
+    # Walk-forward backtesting with chronological classification windows
+    data = load_breast_cancer()
+    series = data.data
+    labels = data.target
+
+    model = LazyTimeSeriesClassification(lookback=10, horizon=1, test_size=0.2, n_splits=3)
+    scores = model.backtest(series, labels)
+
+    # Expected output: a classification benchmark table averaged across splits.
     print(scores.head())
 ```
 
