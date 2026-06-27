@@ -11,6 +11,10 @@ To install Lazy Predict Nightly:
 
     pip install lazypredict-nightly
 
+Optional extras for boosted trees are available when you want the full model catalog:
+
+    pip install "lazypredict-nightly[boosting]"
+
 To use Lazy Predict in a project:
 
     import lazypredict

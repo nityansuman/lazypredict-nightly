@@ -1,10 +1,8 @@
 import warnings
 import time
 
-import lightgbm
 import numpy as np
 import pandas as pd
-import xgboost
 from sklearn.base import ClassifierMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
@@ -14,6 +12,16 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
 from sklearn.utils import all_estimators
 from tqdm import tqdm
+
+try:
+    import xgboost
+except ImportError:  # pragma: no cover - optional dependency
+    xgboost = None
+
+try:
+    import lightgbm
+except ImportError:  # pragma: no cover - optional dependency
+    lightgbm = None
 
 warnings.filterwarnings("ignore")
 pd.set_option("display.precision", 2)
@@ -42,8 +50,11 @@ CLASSIFIERS = [
     if issubclass(est[1], ClassifierMixin) and est[0] not in REMOVED_CLASSIFIERS
 ]
 
-CLASSIFIERS.append(("XGBClassifier", xgboost.XGBClassifier))
-CLASSIFIERS.append(("LGBMClassifier", lightgbm.LGBMClassifier))
+if xgboost is not None:
+    CLASSIFIERS.append(("XGBClassifier", xgboost.XGBClassifier))
+
+if lightgbm is not None:
+    CLASSIFIERS.append(("LGBMClassifier", lightgbm.LGBMClassifier))
 
 
 numeric_transformer = Pipeline(

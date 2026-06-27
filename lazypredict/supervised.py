@@ -19,4 +19,13 @@ from sklearn.metrics import (
 )
 from .classifier import *
 from .regressor import *
-import lightgbm
+
+try:
+    import xgboost
+except ImportError:  # pragma: no cover - optional dependency
+    xgboost = None
+
+try:
+    import lightgbm
+except ImportError:  # pragma: no cover - optional dependency
+    lightgbm = None

@@ -98,6 +98,8 @@ class LazyTimeSeriesClassifier:
 
         combined = pd.concat(split_scores).reset_index()
         grouped = combined.groupby("Model", as_index=False).mean(numeric_only=True).set_index("Model")
+        if grouped.empty:
+            raise ValueError("No valid backtest scores were produced")
         return grouped.sort_values(by="Balanced Accuracy", ascending=False)
 
 

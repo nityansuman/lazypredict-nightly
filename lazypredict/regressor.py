@@ -1,10 +1,8 @@
 import time
 import warnings
 
-import lightgbm
 import numpy as np
 import pandas as pd
-import xgboost
 from sklearn.base import RegressorMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
@@ -13,6 +11,16 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
 from sklearn.utils import all_estimators
 from tqdm import tqdm
+
+try:
+    import xgboost
+except ImportError:  # pragma: no cover - optional dependency
+    xgboost = None
+
+try:
+    import lightgbm
+except ImportError:  # pragma: no cover - optional dependency
+    lightgbm = None
 
 from .utils.regression_metrics import RegressionMetrics
 from .classifier import get_card_split
@@ -45,8 +53,11 @@ REGRESSORS = [
     if issubclass(est[1], RegressorMixin) and est[0] not in REMOVED_REGRESSORS
 ]
 
-REGRESSORS.append(("XGBRegressor", xgboost.XGBRegressor))
-REGRESSORS.append(("LGBMRegressor", lightgbm.LGBMRegressor))
+if xgboost is not None:
+    REGRESSORS.append(("XGBRegressor", xgboost.XGBRegressor))
+
+if lightgbm is not None:
+    REGRESSORS.append(("LGBMRegressor", lightgbm.LGBMRegressor))
 
 numeric_transformer = Pipeline(
     steps=[("imputer", SimpleImputer(strategy="mean")), ("scaler", StandardScaler())]

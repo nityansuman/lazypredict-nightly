@@ -38,6 +38,10 @@ setup(
     description="[Updated] Lazy Predict help build a lot of basic models without much code and helps understand which models works better without any parameter tuning",
     long_description_content_type="text/markdown",
     install_requires=requirements,
+    extras_require={
+        "boosting": ["xgboost>=1.5", "lightgbm>=3.0"],
+        "all": ["xgboost>=1.5", "lightgbm>=3.0"],
+    },
     license="MIT license",
     long_description=readme + "\n\n" + history,
     include_package_data=True,

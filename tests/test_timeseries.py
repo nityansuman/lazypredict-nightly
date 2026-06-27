@@ -1,11 +1,11 @@
 import numpy as np
+import pytest
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from lazypredict import (
     LazyTimeSeriesClassification,
     LazyTimeSeriesForecasting,
-    evaluate_ts_classification,
-    evaluate_ts_forecasting,
+    TimeSeriesMetrics,
     make_supervised_windows,
 )
 
@@ -43,6 +43,19 @@ def test_time_series_forecasting_backtest_smoke():
     assert not backtest_scores.empty
 
 
+def test_time_series_forecasting_handles_tiny_series():
+    series = np.arange(20).reshape(-1, 1)
+    model = LazyTimeSeriesForecasting(
+        lookback=3,
+        horizon=1,
+        test_size=0.25,
+        n_splits=2,
+        regressors=[DecisionTreeRegressor],
+    )
+    with pytest.raises(ValueError, match="No valid backtest scores were produced"):
+        model.backtest(series)
+
+
 def test_time_series_classification_smoke():
     series = np.column_stack([np.arange(80), np.arange(80) * 2])
     labels = np.array([0, 1] * 40)
@@ -74,9 +87,24 @@ def test_time_series_classification_backtest_smoke():
     assert not backtest_scores.empty
 
 
+def test_time_series_classification_handles_short_window():
+    series = np.column_stack([np.arange(30), np.arange(30) * 2])
+    labels = np.array([0, 1] * 15)
+    model = LazyTimeSeriesClassification(
+        lookback=4,
+        horizon=1,
+        test_size=0.25,
+        n_splits=2,
+        classifiers=[DecisionTreeClassifier],
+    )
+    scores = model.backtest(series, labels)
+
+    assert not scores.empty
+
+
 def test_time_series_metrics_helpers():
-    classification_metrics = evaluate_ts_classification([0, 1, 1], [0, 1, 0])
-    forecasting_metrics = evaluate_ts_forecasting(np.array([1.0, 2.0]), np.array([1.1, 1.9]))
+    classification_metrics = TimeSeriesMetrics.classification([0, 1, 1], [0, 1, 0])
+    forecasting_metrics = TimeSeriesMetrics.forecasting(np.array([1.0, 2.0]), np.array([1.1, 1.9]))
 
     assert set(classification_metrics) == {"Accuracy", "Balanced Accuracy", "F1 Score"}
     assert set(forecasting_metrics) >= {"MAE", "RMSE", "R2"}
