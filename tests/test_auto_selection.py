@@ -1,6 +1,6 @@
 import pandas as pd
 
-from lazypredict.auto import select_best_model
+from lazypredict import select_best_model
 
 
 def test_select_best_model_uses_requested_metric():

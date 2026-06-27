@@ -15,24 +15,45 @@ To use Lazy Predict in a project:
 
     import lazypredict
 
-## Classification
+## Examples
+
+The examples below use multiple datasets from `sklearn` so you can see how the package fits different use cases.
+
+### Classification
+
+Binary and multiclass examples using breast cancer and iris.
 
 ```
     from lazypredict import LazyClassifier
 
-    from sklearn.datasets import load_breast_cancer
+    from sklearn.datasets import load_breast_cancer, load_iris
     from sklearn.model_selection import train_test_split
 
-    data = load_breast_cancer()
-    X = data.data
-    y= data.target
+    # Binary classification example
+    breast_cancer = load_breast_cancer()
+    X = breast_cancer.data
+    y = breast_cancer.target
 
     X_train, X_test, y_train, y_test = train_test_split(X, y,test_size=.5,random_state =123)
 
     clf = LazyClassifier(verbose=0,ignore_warnings=True, custom_metric=None)
     models,predictions = clf.fit(X_train, X_test, y_train, y_test)
 
+    # Expected output: a DataFrame sorted by Balanced Accuracy and a predictions table.
     print(models)
+
+    # Multiclass classification example
+    iris = load_iris()
+    X = iris.data
+    y = iris.target
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.3, random_state=123)
+
+    clf = LazyClassifier(verbose=0,ignore_warnings=True, custom_metric=None)
+    models, predictions = clf.fit(X_train, X_test, y_train, y_test)
+
+    # Expected output: a ranking table with multiclass metrics.
+    print(models.head())
 
 
     | Model                          |   Accuracy |   Balanced Accuracy |   ROC AUC |   F1 Score |   Time Taken |
@@ -69,15 +90,18 @@ To use Lazy Predict in a project:
     | DummyClassifier                |   0.512281 |            0.489598 |  0.489598 |   0.518924 |    0.0119965 |
 ```
 
-## Regression
+### Regression
+
+Single-output and multi-output examples using California housing and diabetes.
 
 ```
     from lazypredict import LazyRegressor
 
-    from sklearn.datasets import fetch_california_housing
+    from sklearn.datasets import fetch_california_housing, load_diabetes
     from sklearn.utils import shuffle
     import numpy as np
 
+    # Single-output regression example
     housing = fetch_california_housing()
     X, y = shuffle(housing.data, housing.target, random_state=13)
     X = X.astype(np.float32)
@@ -90,9 +114,26 @@ To use Lazy Predict in a project:
     reg = LazyRegressor(verbose=0, ignore_warnings=False, custom_metric=None)
     models, predictions = reg.fit(X_train, X_test, y_train, y_test)
 
+    # Expected output: a DataFrame sorted by Adjusted R-Squared and optional predictions.
     print(models)
 
     # LightGBM may print informational warnings while fitting; this is expected.
+
+    # Multi-output style regression example built from diabetes features
+    diabetes = load_diabetes()
+    X = diabetes.data.astype(np.float32)
+    y = np.column_stack([diabetes.target, diabetes.target * 0.5])
+
+    offset = int(X.shape[0] * 0.9)
+
+    X_train, y_train = X[:offset], y[:offset]
+    X_test, y_test = X[offset:], y[offset:]
+
+    reg = LazyRegressor(verbose=0, ignore_warnings=False, custom_metric=None)
+    models, predictions = reg.fit(X_train, X_test, y_train, y_test)
+
+    # Expected output: a ranking table for multi-output regression support.
+    print(models.head())
 
 
     | Model                         | Adjusted R-Squared | R-Squared |  RMSE | Time Taken |
@@ -141,7 +182,7 @@ To use Lazy Predict in a project:
     | KernelRidge                   |             -11.50 |     -8.25 | 22.74 |       0.01 |
 ```
 
-## Time Series
+### Time Series
 
 Lazy Predict Nightly also provides wrappers for supervised time series workflows.
 
@@ -149,36 +190,70 @@ Lazy Predict Nightly also provides wrappers for supervised time series workflows
 
 ```
     from lazypredict import LazyTimeSeriesForecasting
+    from sklearn.datasets import load_diabetes
+
+    # Use the diabetes features as a multivariate time-series-style input
+    data = load_diabetes()
+    series = data.data
 
     model = LazyTimeSeriesForecasting(lookback=10, horizon=1, test_size=0.2)
     scores, predictions = model.fit(series)
+
+    # Expected output: a DataFrame ranked by Adjusted R-Squared.
+    print(scores.head())
 ```
 
 ### Multi-step forecasting
 
 ```
     from lazypredict import LazyTimeSeriesForecasting
+    from sklearn.datasets import fetch_california_housing
+
+    # Use California housing columns as multivariate inputs
+    housing = fetch_california_housing()
+    series = housing.data
 
     model = LazyTimeSeriesForecasting(lookback=10, horizon=3, test_size=0.2)
     scores, predictions = model.fit(series)
+
+    # Expected output: a multi-step forecasting benchmark table.
+    print(scores.head())
 ```
 
 ### 1-step classification
 
 ```
     from lazypredict import LazyTimeSeriesClassification
+    from sklearn.datasets import load_breast_cancer
+
+    # Use breast cancer features as a multivariate sequence with binary labels
+    data = load_breast_cancer()
+    series = data.data
+    labels = data.target
 
     model = LazyTimeSeriesClassification(lookback=10, horizon=1, test_size=0.2)
     scores, predictions = model.fit(series, labels)
+
+    # Expected output: a classification benchmark table ranked by Balanced Accuracy.
+    print(scores.head())
 ```
 
 ### Multi-step classification
 
 ```
     from lazypredict import LazyTimeSeriesClassification
+    from sklearn.datasets import load_iris
+
+    # Use iris features with labels aligned to successive windows
+    data = load_iris()
+    series = data.data
+    labels = data.target
 
     model = LazyTimeSeriesClassification(lookback=10, horizon=3, test_size=0.2)
     scores, predictions = model.fit(series, labels)
+
+    # Expected output: a multi-step classification benchmark table.
+    print(scores.head())
 ```
 
 ### Evaluation helpers
@@ -190,26 +265,48 @@ Lazy Predict Nightly also provides wrappers for supervised time series workflows
     forecasting_metrics = evaluate_ts_forecasting(y_true, y_pred)
 ```
 
-## Automatic Model Selection
+### Automatic Model Selection
 
 If you want Lazy Predict Nightly to return the best model directly, use the auto wrappers.
 
 ```
     from lazypredict import AutoLazyClassifier, AutoLazyRegressor
+    from sklearn.datasets import load_iris, load_diabetes
+
+    # Best classification model from the iris dataset
+    iris = load_iris()
+    X_train, X_test, y_train, y_test = train_test_split(iris.data, iris.target, test_size=.3, random_state=123)
 
     auto_clf = AutoLazyClassifier(metric="Balanced Accuracy")
     best_name, best_model, scores = auto_clf.fit(X_train, X_test, y_train, y_test)
 
+    # Expected output: best_name + fitted pipeline + full score table.
+    print(best_name)
+
+    # Best regression model from the diabetes dataset
+    diabetes = load_diabetes()
+    X_train, X_test, y_train, y_test = train_test_split(diabetes.data, diabetes.target, test_size=.3, random_state=123)
     auto_reg = AutoLazyRegressor(metric="Adjusted R-Squared")
     best_name, best_model, scores = auto_reg.fit(X_train, X_test, y_train, y_test)
+
+    print(best_name)
 ```
 
 ```
     from lazypredict import AutoLazyTimeSeriesClassifier, AutoLazyTimeSeriesForecasting
+    from sklearn.datasets import load_breast_cancer, fetch_california_housing
 
+    # Best time-series classifier from breast cancer windows
+    data = load_breast_cancer()
     auto_ts_clf = AutoLazyTimeSeriesClassifier(metric="Balanced Accuracy")
-    best_name, best_model, scores = auto_ts_clf.fit(series, labels)
+    best_name, best_model, scores = auto_ts_clf.fit(data.data, data.target)
 
+    print(best_name)
+
+    # Best time-series forecaster from California housing windows
+    housing = fetch_california_housing()
     auto_ts_reg = AutoLazyTimeSeriesForecasting(metric="Adjusted R-Squared")
-    best_name, best_model, scores = auto_ts_reg.fit(series)
+    best_name, best_model, scores = auto_ts_reg.fit(housing.data)
+
+    print(best_name)
 ```
