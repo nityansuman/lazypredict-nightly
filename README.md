@@ -15,6 +15,24 @@ To use Lazy Predict in a project:
 
     import lazypredict
 
+### Public API
+
+Lazy Predict Nightly keeps the main benchmarking classes at the package root:
+
+```python
+    from lazypredict import (
+        LazyClassifier,
+        LazyRegressor,
+        LazyTimeSeriesClassification,
+        LazyTimeSeriesForecasting,
+        AutoLazyClassifier,
+        AutoLazyRegressor,
+        ClassificationMetrics,
+        RegressionMetrics,
+        TimeSeriesMetrics,
+    )
+```
+
 ## Examples
 
 The examples below use multiple datasets from `sklearn` so you can see how the package fits different use cases.
@@ -256,7 +274,7 @@ Lazy Predict Nightly also provides wrappers for supervised time series workflows
     print(scores.head())
 ```
 
-### Evaluation helpers
+### Metric containers
 
 ```python
     from lazypredict import ClassificationMetrics, RegressionMetrics, TimeSeriesMetrics
