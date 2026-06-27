@@ -1,20 +1,25 @@
 name: Publish Python Package
 
 on:
-  push:
+  pull_request:
+    types:
+      - closed
     branches:
       - main
 
 jobs:
   build-and-publish:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      contents: write
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -26,6 +31,49 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install build twine
 
+      - name: Determine version bump
+        id: version
+        run: |
+          python - <<'PY'
+          import re
+          import os
+          from pathlib import Path
+
+          title = os.environ.get('PR_TITLE', '')
+          setup_path = Path('setup.py')
+          init_path = Path('lazypredict/__init__.py')
+          cfg_path = Path('setup.cfg')
+
+          setup_text = setup_path.read_text()
+          version_match = re.search(r'version="([0-9]+\.[0-9]+\.[0-9]+)"', setup_text)
+          if not version_match:
+            raise SystemExit('Could not find current version in setup.py')
+
+          current_version = version_match.group(1)
+          major, minor, patch = map(int, current_version.split('.'))
+
+          normalized_title = title.lower()
+          if '[major]' in normalized_title:
+              new_version = f'{major + 1}.0.0'
+              bump_type = 'major'
+          elif '[minor]' in normalized_title:
+              new_version = f'{major}.{minor + 1}.0'
+              bump_type = 'minor'
+          else:
+              new_version = f'{major}.{minor}.{patch + 1}'
+              bump_type = 'patch'
+
+          setup_path.write_text(setup_text.replace(f'version="{current_version}"', f'version="{new_version}"', 1))
+          init_path.write_text(init_path.read_text().replace(f'__version__ = "{current_version}"', f'__version__ = "{new_version}"', 1))
+          cfg_path.write_text(cfg_path.read_text().replace(f'current_version = {current_version}', f'current_version = {new_version}', 1))
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output_file:
+            output_file.write(f'new_version={new_version}\n')
+            output_file.write(f'bump_type={bump_type}\n')
+          PY
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+
       - name: Build package
         run: python -m build
 
@@ -36,3 +84,11 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add setup.py lazypredict/__init__.py setup.cfg
+          git commit -m "chore: bump ${{ steps.version.outputs.bump_type }} version to ${{ steps.version.outputs.new_version }} [skip ci]" || exit 0
+          git push origin HEAD:main
