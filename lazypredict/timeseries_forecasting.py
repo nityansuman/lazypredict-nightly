@@ -1,8 +1,8 @@
 import numpy as np
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 
 from .regressor import LazyRegressor
+from .utils.time_series_metrics import TimeSeriesMetrics
 
 
 def make_supervised_windows(series, lookback=5, horizon=1):
@@ -29,22 +29,6 @@ def make_supervised_windows(series, lookback=5, horizon=1):
         y = y.reshape(-1)
 
     return X, y
-
-
-def evaluate_ts_forecasting(y_true, y_pred):
-    """Compute standard forecasting metrics for time-series predictions."""
-    y_true = np.asarray(y_true)
-    y_pred = np.asarray(y_pred)
-
-    metrics = {
-        "MAE": mean_absolute_error(y_true, y_pred),
-        "RMSE": float(np.sqrt(mean_squared_error(y_true, y_pred))),
-        "R2": r2_score(y_true, y_pred),
-    }
-    if y_true.ndim == 2 and y_true.shape[1] > 1:
-        metrics["MSE"] = mean_squared_error(y_true, y_pred)
-
-    return metrics
 
 
 class LazyTimeSeriesRegressor:

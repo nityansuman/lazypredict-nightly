@@ -14,6 +14,7 @@ from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
 from sklearn.utils import all_estimators
 from tqdm import tqdm
 
+from .utils.regression_metrics import RegressionMetrics
 from .classifier import get_card_split
 
 warnings.filterwarnings("ignore")
@@ -64,11 +65,6 @@ categorical_transformer_high = Pipeline(
         ("encoding", OrdinalEncoder()),
     ]
 )
-
-
-def adjusted_rsquared(r2, n, p):
-    """Compute adjusted R-squared from a raw R-squared value."""
-    return 1 - (1 - r2) * ((n - 1) / (n - p - 1))
 
 
 def filter_models(models, exclude_models=None):
@@ -165,7 +161,7 @@ class LazyRegressor:
                 y_pred = pipe.predict(X_test)
 
                 r_squared = r2_score(y_test, y_pred)
-                adj_rsquared = adjusted_rsquared(r_squared, X_test.shape[0], X_test.shape[1])
+                adj_rsquared = RegressionMetrics.adjusted_rsquared(r_squared, X_test.shape[0], X_test.shape[1])
                 rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 
                 names.append(name)

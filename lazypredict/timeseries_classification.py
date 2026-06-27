@@ -1,8 +1,8 @@
 import numpy as np
-from sklearn.metrics import accuracy_score, balanced_accuracy_score, f1_score
 from sklearn.model_selection import train_test_split
 
 from .classifier import LazyClassifier
+from .utils.time_series_metrics import TimeSeriesMetrics
 
 
 def make_classification_windows(series, labels, lookback=5, horizon=1):
@@ -28,15 +28,6 @@ def make_classification_windows(series, labels, lookback=5, horizon=1):
         y = y.reshape(-1)
 
     return X, y
-
-
-def evaluate_ts_classification(y_true, y_pred):
-    """Compute accuracy, balanced accuracy, and weighted F1 for classification."""
-    return {
-        "Accuracy": accuracy_score(y_true, y_pred),
-        "Balanced Accuracy": balanced_accuracy_score(y_true, y_pred),
-        "F1 Score": f1_score(y_true, y_pred, average="weighted"),
-    }
 
 
 class LazyTimeSeriesClassifier:

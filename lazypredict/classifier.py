@@ -8,7 +8,8 @@ import xgboost
 from sklearn.base import ClassifierMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import accuracy_score, balanced_accuracy_score, f1_score, roc_auc_score
+from sklearn.metrics import accuracy_score, balanced_accuracy_score, f1_score
+from .utils.classification_metrics import ClassificationMetrics
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
 from sklearn.utils import all_estimators
@@ -70,23 +71,6 @@ def get_card_split(df, cols, n=11):
     card_high = cols[cond]
     card_low = cols[~cond]
     return card_low, card_high
-
-
-def get_roc_auc_score(estimator, X_test, y_test):
-    """Compute ROC AUC from probabilistic or margin-based outputs."""
-    if hasattr(estimator, "predict_proba"):
-        y_score = estimator.predict_proba(X_test)
-        if y_score.ndim == 2 and y_score.shape[1] > 2:
-            return roc_auc_score(y_test, y_score, multi_class="ovr")
-        return roc_auc_score(y_test, y_score[:, 1])
-
-    if hasattr(estimator, "decision_function"):
-        y_score = estimator.decision_function(X_test)
-        if np.ndim(y_score) == 2 and y_score.shape[1] > 2:
-            return roc_auc_score(y_test, y_score, multi_class="ovr")
-        return roc_auc_score(y_test, y_score)
-
-    return roc_auc_score(y_test, estimator.predict(X_test))
 
 
 def filter_models(models, exclude_models=None):
@@ -187,7 +171,7 @@ class LazyClassifier:
                 f1 = f1_score(y_test, y_pred, average="weighted")
 
                 try:
-                    roc_auc = get_roc_auc_score(pipe, X_test, y_test)
+                    roc_auc = ClassificationMetrics.roc_auc(pipe, X_test, y_test)
                 except Exception as exception:
                     roc_auc = None
                     if self.ignore_warnings is False:
