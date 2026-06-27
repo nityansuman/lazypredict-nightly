@@ -160,9 +160,9 @@ class LazyRegressor:
                 self.models[name] = pipe
                 y_pred = pipe.predict(X_test)
 
-                r_squared = r2_score(y_test, y_pred)
-                adj_rsquared = RegressionMetrics.adjusted_rsquared(r_squared, X_test.shape[0], X_test.shape[1])
-                rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+                r_squared = RegressionMetrics.r_squared(y_test, y_pred)
+                adj_rsquared = RegressionMetrics.adjusted_r_squared(y_test, y_pred, X_test.shape[1])
+                rmse = RegressionMetrics.rmse(y_test, y_pred)
 
                 names.append(name)
                 R2.append(r_squared)

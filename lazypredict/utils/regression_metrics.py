@@ -26,8 +26,3 @@ class RegressionMetrics:
 	def rmse(y_true, y_pred):
 		"""Compute root mean squared error."""
 		return float(np.sqrt(mean_squared_error(y_true, y_pred)))
-
-	@staticmethod
-	def adjusted_rsquared(r2, n, p):
-		"""Compute adjusted R-squared from a raw R-squared value."""
-		return 1 - (1 - r2) * ((n - 1) / (n - p - 1))
