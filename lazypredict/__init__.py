@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
-from .supervised import LazyClassifier, LazyRegressor
-from .timeseries import (
+from .classifier import LazyClassifier
+from .regressor import LazyRegressor
+from .timeseries_classification import (
 	LazyTimeSeriesClassification,
 	LazyTimeSeriesClassifier,
+	evaluate_ts_classification,
+)
+from .timeseries_forecasting import (
 	LazyTimeSeriesForecasting,
 	LazyTimeSeriesRegressor,
-	evaluate_ts_classification,
 	evaluate_ts_forecasting,
 	make_supervised_windows,
 )
